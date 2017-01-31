@@ -22,7 +22,8 @@ data RoleInstance = RoleInstance {value :: String} deriving (Show)
 data EventInstance = EventInstance {startDate :: Date, status :: Status, iparty :: RoleInstance, isubject :: RoleInstance} deriving (Show)
 
 -- sample population
-pops = [(Event {name = "SalesOrder", party = Role "Customer", subject = Role "SalesProduct"}, [EventInstance {startDate = (1, 1, 2017), status = Done, iparty = RoleInstance {value="Alice"}, isubject = RoleInstance {value = "Merida X0 Carbon"}}, EventInstance {startDate = (1, 2, 2017), status = ToDo, iparty = RoleInstance {value="Bob"}, isubject = RoleInstance {value = "Merida X0 Carbon"}}, EventInstance {startDate = (1, 3, 2017), status = ToDo, iparty = RoleInstance {value="Charles"}, isubject = RoleInstance {value = "Merida X0 Carbon"}}])]
+pops1 = [(Event {name = "SalesOrder", party = Role "Customer", subject = Role "SalesProduct"}, [EventInstance {startDate = (1, 1, 2017), status = Done, iparty = RoleInstance {value="Alice"}, isubject = RoleInstance {value = "Merida X0 Carbon"}}, EventInstance {startDate = (1, 2, 2017), status = ToDo, iparty = RoleInstance {value="Bob"}, isubject = RoleInstance {value = "Merida X0 Carbon"}}, EventInstance {startDate = (1, 3, 2017), status = ToDo, iparty = RoleInstance {value="Charles"}, isubject = RoleInstance {value = "Merida X0 Carbon"}}])]
+pops2 = [(Event {name = "SalesOrder", party = Role "Customer", subject = Role "SalesProduct"}, [EventInstance {startDate = (1, 1, 2017), status = Done, iparty = RoleInstance {value="Alice"}, isubject = RoleInstance {value = "Merida X0 Carbon"}}, EventInstance {startDate = (1, 2, 2017), status = ToDo, iparty = RoleInstance {value="Bob"}, isubject = RoleInstance {value = "Merida X0 Carbon"}}, EventInstance {startDate = (1, 3, 2017), status = ToDo, iparty = RoleInstance {value="Charles"}, isubject = RoleInstance {value = "Merida X0 Carbon"}}])]
 
 
 pop:: String -> [EventInstance]
