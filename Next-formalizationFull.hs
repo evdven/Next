@@ -44,7 +44,9 @@ data LAMEvent = LAMEvent {lamEvtName :: String, lamEvtStyle:: EvtStyle, lamhasPa
 ------------------------------------------- Instance
 -- date = dd, mm, yyyy
 type Date = (Integer, Integer, Integer)
--- follows the index of the status
+-- follows the index of the status (ToDo, Start, Done)
+-- For an event instance in plannedDate fied ToDo date is mandatory. 
+-- Status (lifecyle) of an event instance will be determined based on Start and Done date values in plannedDate and actualDate fields.
 type TimeStamps = [Date]
 
 emptyDateFirst :: Date
@@ -178,6 +180,8 @@ deduceStock:: [EventInstance] -> [Stock]
 deduceStock es = [ countStock ent es | ent <- getEntities es]
 
 -- planned
+-- there can be three dates in this field (ToDo, Start, Done)
+-- ToDo date is mandatory for the plannedDate field
 getPlannedDate:: EventInstance -> TimeStamps
 getPlannedDate e = evtInstPlanned e
 
@@ -188,6 +192,7 @@ getPlannedEndDate:: EventInstance -> Date
 getPlannedEndDate e = (getPlannedDate e) !!2
 
 -- actual
+-- there can be three dates in this field (ToDo, Start, Done)
 getActualDate:: EventInstance -> TimeStamps
 getActualDate e = evtInstActual e
 
