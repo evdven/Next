@@ -43,19 +43,32 @@ data LAMEvent = LAMEvent {lamEvtName :: String, lamEvtStyle:: EvtStyle, lamhasPa
 
 ------------------------------------------- Instance
 -- date = dd, mm, yyyy
-type Date = (Integer, Integer, Integer)
+type Date = (Integer, Integer, Integer) 
 -- follows the index of the status
-type TimeStamps = [Date]
+--type TimeStamps = [Date]
+data Timing = Timing {todo :: Date,  begin :: Date, end :: Date} deriving (Eq, Show)
+
+
+{-
+type Date = (Integer, Integer, Integer)
+data Timing = Timing {begin :: Date, end :: Date} deriving (Eq, Show)
+
+data EventInstance = EventInstance {name :: String, planned :: Timing, actual :: Timing} deriving (Eq, Show)
+
+event1 = EventInstance{name = "My first event!", planned = Timing{begin = (5, 1, 2017), end = (10, 2, 2017)}, actual = Timing {begin = (6, 1, 2017), end = (16, 3, 2017)}}
+-}
 
 emptyDateFirst :: Date
 emptyDateFirst = (1, 1, 1970)
 emptyDateLast :: Date
 emptyDateLast = (1, 1, 2100)
+empyTiming = Timing {todo=emptyDateFirst, begin=emptyDateFirst, end=emptyDateFirst}
+
 
 data EntityInstance = EntityInstance {entRef :: LAMEntity, entInstName :: String, entInstType :: EntType, entInstCreate :: Date, entInstDelete :: Date} deriving (Eq, Show)
 data RoleInstance = RoleInstance {rolRef:: LAMRole, rolInstName :: String, actInstStyle :: [LAMActorStyle], rolEnt :: EntityInstance, rolInstCreate :: Date, rolInstDelete :: Date} deriving (Eq, Show)
 -- TODO elements are missing: incoming edges, outgoing edges, agreement, begin end date
-data EventInstance = EventInstance {evtRef :: LAMEvent, evtInstName :: String, evtInstStyle :: EvtStyle, evtInstHasParty :: Bool, evtInstParty :: RoleInstance, evtInstHasSubject :: Bool, evtInstSubject :: RoleInstance, evtInstHasAmount :: Bool, evtInstHasValue :: Bool, evtInstDirection :: Direction, evtInstChangeOfOwnership :: OEMEvtOptions, evtInstTypeOfOwnership :: OEMTypeOfOwnership, evtInstPaymentRequired :: OEMEvtOptions, evtInstPlanned :: TimeStamps, evtInstActual :: TimeStamps, evtInstAdministrative :: TimeStamps, evtInstAmount :: Integer, evtInstValue :: [Double]} deriving (Eq, Show)
+data EventInstance = EventInstance {evtRef :: LAMEvent, evtInstName :: String, evtInstStyle :: EvtStyle, evtInstHasParty :: Bool, evtInstParty :: RoleInstance, evtInstHasSubject :: Bool, evtInstSubject :: RoleInstance, evtInstHasAmount :: Bool, evtInstHasValue :: Bool, evtInstDirection :: Direction, evtInstChangeOfOwnership :: OEMEvtOptions, evtInstTypeOfOwnership :: OEMTypeOfOwnership, evtInstPaymentRequired :: OEMEvtOptions, evtInstPlanned :: Timing, evtInstActual :: Timing, evtInstAdministrative :: Timing, evtInstAmount :: Integer, evtInstValue :: [Double]} deriving (Eq, Show)
 
 
 ------------------------------------------- Model
@@ -90,27 +103,27 @@ good2 = EntityInstance{entRef = goodEntity, entInstName = "Auto", entInstType = 
 product1 = RoleInstance{rolRef = roleProduct, rolInstName = "Product", actInstStyle = [productStyle], rolEnt = good1, rolInstCreate = (1, 1, 2016), rolInstDelete = emptyDateLast}
 product2 = RoleInstance{rolRef = roleProduct, rolInstName = "Product", actInstStyle = [productStyle], rolEnt = good2, rolInstCreate = (15, 2, 2016), rolInstDelete = emptyDateLast}
 
-delivery1a = EventInstance{evtRef = deliveryEvent, evtInstName = "delivery1a", evtInstStyle = Regular, evtInstHasParty = True, evtInstParty = customer1, evtInstHasSubject = True, evtInstSubject = product1, evtInstHasAmount = True, evtInstHasValue = True, evtInstDirection  = DirOut, evtInstChangeOfOwnership = Always, evtInstTypeOfOwnership = TradeItem, evtInstPaymentRequired = Never, evtInstPlanned = [(1, 1, 2017), (5, 1, 2017), (10, 2, 2017)], evtInstActual = [(3, 1, 2017), (10, 2, 2017), (16, 3, 2017)], evtInstAdministrative = [(1, 1, 2017), (5, 1, 2017), (10, 2, 2017)], evtInstAmount = 5, evtInstValue = [100, 500]}
+delivery1a = EventInstance{evtRef = deliveryEvent, evtInstName = "delivery1a", evtInstStyle = Regular, evtInstHasParty = True, evtInstParty = customer1, evtInstHasSubject = True, evtInstSubject = product1, evtInstHasAmount = True, evtInstHasValue = True, evtInstDirection  = DirOut, evtInstChangeOfOwnership = Always, evtInstTypeOfOwnership = TradeItem, evtInstPaymentRequired = Never, evtInstPlanned = Timing { todo = (1, 1, 2017), begin = (5, 1, 2017), end = (10, 2, 2017)}, evtInstActual = Timing{ todo = (3, 1, 2017), begin = (10, 2, 2017), end = (16, 3, 2017)}, evtInstAdministrative = Timing { todo = (1, 1, 2017), begin = (5, 1, 2017),  end = (10, 2, 2017)}, evtInstAmount = 5, evtInstValue = [100, 500]}
 
-delivery1b = EventInstance{evtRef = deliveryEvent, evtInstName = "delivery1b", evtInstStyle = Regular, evtInstHasParty = True, evtInstParty = customer1, evtInstHasSubject = True, evtInstSubject = product1, evtInstHasAmount = True, evtInstHasValue = True, evtInstDirection  = DirOut, evtInstChangeOfOwnership = Always, evtInstTypeOfOwnership = TradeItem, evtInstPaymentRequired = Never, evtInstPlanned = [(11, 3, 2017), (15, 3, 2017), (20, 5, 2017)], evtInstActual = [(13, 3, 2017), (20, 5, 2017), (26, 6, 2017)], evtInstAdministrative = [(11, 3, 2017), (15, 3, 2017), (20, 5, 2017)], evtInstAmount = 3, evtInstValue = [100, 500]}
+delivery1b = EventInstance{evtRef = deliveryEvent, evtInstName = "delivery1b", evtInstStyle = Regular, evtInstHasParty = True, evtInstParty = customer1, evtInstHasSubject = True, evtInstSubject = product1, evtInstHasAmount = True, evtInstHasValue = True, evtInstDirection  = DirOut, evtInstChangeOfOwnership = Always, evtInstTypeOfOwnership = TradeItem, evtInstPaymentRequired = Never, evtInstPlanned = Timing{ todo = (11, 3, 2017), begin = (15, 3, 2017), end = (20, 5, 2017)}, evtInstActual = Timing{ todo = (13, 3, 2017), begin = (20, 5, 2017), end = (26, 6, 2017)}, evtInstAdministrative = Timing{ todo = (11, 3, 2017), begin = (15, 3, 2017), end = (20, 5, 2017)}, evtInstAmount = 3, evtInstValue = [100, 500]}
 
-delivery2a = EventInstance{evtRef = deliveryEvent, evtInstName = "delivery2a", evtInstStyle = Regular, evtInstHasParty = True, evtInstParty = customer2, evtInstHasSubject = True, evtInstSubject = product2, evtInstHasAmount = True, evtInstHasValue = True, evtInstDirection  = DirOut, evtInstChangeOfOwnership = Always, evtInstTypeOfOwnership = TradeItem, evtInstPaymentRequired = Never, evtInstPlanned = [(1, 2, 2016), (5, 2, 2016), (10, 3, 2016)], evtInstActual = [(3, 2, 2016), (10, 3, 2016), (30, 3, 2016)], evtInstAdministrative = [(1, 2, 2016), (5, 2, 2016), (10, 3, 2016)], evtInstAmount = 5, evtInstValue = [1000, 5000]}
+delivery2a = EventInstance{evtRef = deliveryEvent, evtInstName = "delivery2a", evtInstStyle = Regular, evtInstHasParty = True, evtInstParty = customer2, evtInstHasSubject = True, evtInstSubject = product2, evtInstHasAmount = True, evtInstHasValue = True, evtInstDirection  = DirOut, evtInstChangeOfOwnership = Always, evtInstTypeOfOwnership = TradeItem, evtInstPaymentRequired = Never, evtInstPlanned = Timing{ todo =(1, 2, 2016), begin = (5, 2, 2016), end =(10, 3, 2016)}, evtInstActual = Timing{ todo = (3, 2, 2016), begin = (10, 3, 2016),  end = (30, 3, 2016)}, evtInstAdministrative = Timing{ todo = (1, 2, 2016), begin = (5, 2, 2016), end = (10, 3, 2016)}, evtInstAmount = 5, evtInstValue = [1000, 5000]}
 
-delivery2b = EventInstance{evtRef = deliveryEvent, evtInstName = "delivery2b", evtInstStyle = Regular, evtInstHasParty = True, evtInstParty = customer2, evtInstHasSubject = True, evtInstSubject = product2, evtInstHasAmount = True, evtInstHasValue = True, evtInstDirection  = DirOut, evtInstChangeOfOwnership = Always, evtInstTypeOfOwnership = TradeItem, evtInstPaymentRequired = Never, evtInstPlanned = [(11, 5, 2016), (15, 5, 2016), (20, 6, 2016)], evtInstActual = [(13, 5, 2016), (20, 6, 2016), (30, 7, 2016)], evtInstAdministrative = [(11, 5, 2016), (15, 5, 2016), (20, 6, 2016)], evtInstAmount = 7, evtInstValue = [1000, 5000]}
+delivery2b = EventInstance{evtRef = deliveryEvent, evtInstName = "delivery2b", evtInstStyle = Regular, evtInstHasParty = True, evtInstParty = customer2, evtInstHasSubject = True, evtInstSubject = product2, evtInstHasAmount = True, evtInstHasValue = True, evtInstDirection  = DirOut, evtInstChangeOfOwnership = Always, evtInstTypeOfOwnership = TradeItem, evtInstPaymentRequired = Never, evtInstPlanned = Timing{ todo = (11, 5, 2016), begin = (15, 5, 2016), end = (20, 6, 2016)}, evtInstActual = Timing{ todo = (13, 5, 2016), begin = (20, 6, 2016), end = (30, 7, 2016)}, evtInstAdministrative = Timing{ todo = (11, 5, 2016), begin = (15, 5, 2016), end = (20, 6, 2016)}, evtInstAmount = 7, evtInstValue = [1000, 5000]}
 
-delivery3a = EventInstance{evtRef = deliveryEvent, evtInstName = "delivery3a", evtInstStyle = Regular, evtInstHasParty = True, evtInstParty = customer2, evtInstHasSubject = True, evtInstSubject = product2, evtInstHasAmount = True, evtInstHasValue = True, evtInstDirection  = DirOut, evtInstChangeOfOwnership = Always, evtInstTypeOfOwnership = TradeItem, evtInstPaymentRequired = Never, evtInstPlanned = [(1, 5, 2016), (5, 5, 2016), (10, 6, 2016)], evtInstActual = [], evtInstAdministrative = [(1, 5, 2016), (5, 5, 2016), (10, 6, 2016)], evtInstAmount = 7, evtInstValue = [1000, 5000]}
+delivery3a = EventInstance{evtRef = deliveryEvent, evtInstName = "delivery3a", evtInstStyle = Regular, evtInstHasParty = True, evtInstParty = customer2, evtInstHasSubject = True, evtInstSubject = product2, evtInstHasAmount = True, evtInstHasValue = True, evtInstDirection  = DirOut, evtInstChangeOfOwnership = Always, evtInstTypeOfOwnership = TradeItem, evtInstPaymentRequired = Never, evtInstPlanned = Timing{ todo = (1, 5, 2016), begin = (5, 5, 2016), end = (10, 6, 2016)}, evtInstActual = empyTiming, evtInstAdministrative = Timing{ todo = (1, 5, 2016), begin = (5, 5, 2016), end = (10, 6, 2016)}, evtInstAmount = 7, evtInstValue = [1000, 5000]}
 
-delivery3b = EventInstance{evtRef = deliveryEvent, evtInstName = "delivery3b", evtInstStyle = Regular, evtInstHasParty = True, evtInstParty = customer2, evtInstHasSubject = True, evtInstSubject = product2, evtInstHasAmount = True, evtInstHasValue = True, evtInstDirection  = DirOut, evtInstChangeOfOwnership = Always, evtInstTypeOfOwnership = TradeItem, evtInstPaymentRequired = Never, evtInstPlanned = [], evtInstActual = [], evtInstAdministrative = [(1, 5, 2016), (5, 5, 2016), (10, 6, 2016)], evtInstAmount = 7, evtInstValue = [1000, 5000]}
+delivery3b = EventInstance{evtRef = deliveryEvent, evtInstName = "delivery3b", evtInstStyle = Regular, evtInstHasParty = True, evtInstParty = customer2, evtInstHasSubject = True, evtInstSubject = product2, evtInstHasAmount = True, evtInstHasValue = True, evtInstDirection  = DirOut, evtInstChangeOfOwnership = Always, evtInstTypeOfOwnership = TradeItem, evtInstPaymentRequired = Never, evtInstPlanned = empyTiming, evtInstActual = empyTiming, evtInstAdministrative = Timing{ todo = (1, 5, 2016), begin = (5, 5, 2016), end = (10, 6, 2016)}, evtInstAmount = 7, evtInstValue = [1000, 5000]}
 
-goodReceive1a = EventInstance{evtRef = goodsReceiveEvent, evtInstName = "goodReceive1a", evtInstStyle = Regular, evtInstHasParty = True, evtInstParty = customer1, evtInstHasSubject = True, evtInstSubject = product1, evtInstHasAmount = True, evtInstHasValue = True, evtInstDirection  = DirIn, evtInstChangeOfOwnership = Always, evtInstTypeOfOwnership = TradeItem, evtInstPaymentRequired = Never, evtInstPlanned = [(1, 8, 2017), (5, 8, 2017), (10, 9, 2017)], evtInstActual = [(5, 8, 2017), (10, 9, 2017), (16, 10, 2017)], evtInstAdministrative = [(1, 8, 2017), (5, 8, 2017), (10, 9, 2017)], evtInstAmount = 100, evtInstValue = [100, 500]}
+goodReceive1a = EventInstance{evtRef = goodsReceiveEvent, evtInstName = "goodReceive1a", evtInstStyle = Regular, evtInstHasParty = True, evtInstParty = customer1, evtInstHasSubject = True, evtInstSubject = product1, evtInstHasAmount = True, evtInstHasValue = True, evtInstDirection  = DirIn, evtInstChangeOfOwnership = Always, evtInstTypeOfOwnership = TradeItem, evtInstPaymentRequired = Never, evtInstPlanned = Timing{ todo = (1, 8, 2017), begin = (5, 8, 2017), end = (10, 9, 2017)}, evtInstActual = Timing{ todo = (5, 8, 2017), begin = (10, 9, 2017), end = (16, 10, 2017)}, evtInstAdministrative = Timing{ todo = (1, 8, 2017), begin = (5, 8, 2017), end = (10, 9, 2017)}, evtInstAmount = 100, evtInstValue = [100, 500]}
 
-goodReceive1b = EventInstance{evtRef = goodsReceiveEvent, evtInstName = "goodReceive1b", evtInstStyle = Regular, evtInstHasParty = True, evtInstParty = customer1, evtInstHasSubject = True, evtInstSubject = product1, evtInstHasAmount = True, evtInstHasValue = True, evtInstDirection  = DirIn, evtInstChangeOfOwnership = Always, evtInstTypeOfOwnership = TradeItem, evtInstPaymentRequired = Never, evtInstPlanned = [(11, 8, 2017), (15, 8, 2017), (20, 9, 2017)], evtInstActual = [(15, 8, 2017), (10, 9, 2017), (26, 10, 2017)], evtInstAdministrative = [(11, 8, 2017), (15, 8, 2017), (20, 9, 2017)], evtInstAmount = 100, evtInstValue = [100, 500]}
+goodReceive1b = EventInstance{evtRef = goodsReceiveEvent, evtInstName = "goodReceive1b", evtInstStyle = Regular, evtInstHasParty = True, evtInstParty = customer1, evtInstHasSubject = True, evtInstSubject = product1, evtInstHasAmount = True, evtInstHasValue = True, evtInstDirection  = DirIn, evtInstChangeOfOwnership = Always, evtInstTypeOfOwnership = TradeItem, evtInstPaymentRequired = Never, evtInstPlanned = Timing{ todo = (11, 8, 2017), begin = (15, 8, 2017), end = (20, 9, 2017)}, evtInstActual = Timing{ todo = (15, 8, 2017), begin = (10, 9, 2017), end = (26, 10, 2017)}, evtInstAdministrative = Timing{ todo = (11, 8, 2017), begin = (15, 8, 2017), end = (20, 9, 2017)}, evtInstAmount = 100, evtInstValue = [100, 500]}
 
-goodReceive2a = EventInstance{evtRef = goodsReceiveEvent, evtInstName = "goodReceive2a", evtInstStyle = Regular, evtInstHasParty = True, evtInstParty = customer1, evtInstHasSubject = True, evtInstSubject = product1, evtInstHasAmount = True, evtInstHasValue = True, evtInstDirection  = DirIn, evtInstChangeOfOwnership = Always, evtInstTypeOfOwnership = TradeItem, evtInstPaymentRequired = Never, evtInstPlanned = [(10, 8, 2016), (20, 9, 2016), (30, 10, 2016)], evtInstActual = [(10, 8, 2016), (20, 9, 2016), (30, 10, 2016)], evtInstAdministrative = [(10, 8, 2016), (20, 9, 2016), (30, 10, 2016)], evtInstAmount = 100, evtInstValue = [100, 500]}
+goodReceive2a = EventInstance{evtRef = goodsReceiveEvent, evtInstName = "goodReceive2a", evtInstStyle = Regular, evtInstHasParty = True, evtInstParty = customer1, evtInstHasSubject = True, evtInstSubject = product1, evtInstHasAmount = True, evtInstHasValue = True, evtInstDirection  = DirIn, evtInstChangeOfOwnership = Always, evtInstTypeOfOwnership = TradeItem, evtInstPaymentRequired = Never, evtInstPlanned = Timing{ todo = (10, 8, 2016), begin = (20, 9, 2016), end = (30, 10, 2016)}, evtInstActual = Timing{ todo = (10, 8, 2016), begin = (20, 9, 2016), end = (30, 10, 2016)}, evtInstAdministrative = Timing{ todo = (10, 8, 2016), begin = (20, 9, 2016), end = (30, 10, 2016)}, evtInstAmount = 100, evtInstValue = [100, 500]}
 
-goodReceive2b = EventInstance{evtRef = goodsReceiveEvent, evtInstName = "goodReceive2b", evtInstStyle = Regular, evtInstHasParty = True, evtInstParty = customer1, evtInstHasSubject = True, evtInstSubject = product1, evtInstHasAmount = True, evtInstHasValue = True, evtInstDirection  = DirIn, evtInstChangeOfOwnership = Always, evtInstTypeOfOwnership = TradeItem, evtInstPaymentRequired = Never, evtInstPlanned = [(10, 8, 2016), (20, 9, 2016), (30, 10, 2016)], evtInstActual = [(10, 8, 2016), (20, 9, 2016), (30, 10, 2016)], evtInstAdministrative = [(10, 8, 2016), (20, 9, 2016), (30, 10, 2016)], evtInstAmount = 100, evtInstValue = [100, 500]}
+goodReceive2b = EventInstance{evtRef = goodsReceiveEvent, evtInstName = "goodReceive2b", evtInstStyle = Regular, evtInstHasParty = True, evtInstParty = customer1, evtInstHasSubject = True, evtInstSubject = product1, evtInstHasAmount = True, evtInstHasValue = True, evtInstDirection  = DirIn, evtInstChangeOfOwnership = Always, evtInstTypeOfOwnership = TradeItem, evtInstPaymentRequired = Never, evtInstPlanned = Timing{ todo = (10, 8, 2016), begin = (20, 9, 2016), end = (30, 10, 2016)}, evtInstActual = Timing{ todo = (10, 8, 2016), begin = (20, 9, 2016), end = (30, 10, 2016)}, evtInstAdministrative = Timing { todo = (10, 8, 2016), begin = (20, 9, 2016), end = (30, 10, 2016)}, evtInstAmount = 100, evtInstValue = [100, 500]}
 
-salesInvoice1a = EventInstance{evtRef = salesInvoiceEvent, evtInstName = "salesInvoice1a", evtInstStyle = Regular, evtInstHasParty = True, evtInstParty = customer1, evtInstHasSubject = True, evtInstSubject = product1, evtInstHasAmount = True, evtInstHasValue = True, evtInstDirection  = DirIn, evtInstChangeOfOwnership = Never, evtInstTypeOfOwnership = TradeItem, evtInstPaymentRequired = Always, evtInstPlanned = [(1, 8, 2016), (5, 8, 2016), (10, 9, 2016)], evtInstActual = [(5, 8, 2016), (10, 9, 2016), (16, 10, 2016)], evtInstAdministrative = [(1, 8, 2016), (5, 8, 2016), (10, 9, 2016)], evtInstAmount = 100, evtInstValue = [100, 500]}
+salesInvoice1a = EventInstance{evtRef = salesInvoiceEvent, evtInstName = "salesInvoice1a", evtInstStyle = Regular, evtInstHasParty = True, evtInstParty = customer1, evtInstHasSubject = True, evtInstSubject = product1, evtInstHasAmount = True, evtInstHasValue = True, evtInstDirection  = DirIn, evtInstChangeOfOwnership = Never, evtInstTypeOfOwnership = TradeItem, evtInstPaymentRequired = Always, evtInstPlanned = Timing{ todo = (1, 8, 2016), begin = (5, 8, 2016), end =(10, 9, 2016)}, evtInstActual = Timing{ todo = (5, 8, 2016), begin = (10, 9, 2016), end = (16, 10, 2016)}, evtInstAdministrative = Timing{ todo = (1, 8, 2016), begin = (5, 8, 2016), end = (10, 9, 2016)}, evtInstAmount = 100, evtInstValue = [100, 500]}
 
 persons = [person1, person2]
 goods = [good1, good2]
@@ -127,13 +140,14 @@ get3rd (a, b, c) = c
 -- getday
 getday:: Date -> Integer
 getday d = get1st d
--- getyear
-getyear:: Date -> Integer
-getyear d = get3rd d
 
 -- getmonth
 getmonth:: Date -> Integer
 getmonth d = get2nd d
+
+-- getyear
+getyear:: Date -> Integer
+getyear d = get3rd d
 
 -- Data.Time.diffDays requires Int type, so I added these functions
 getdayint::Date -> Int
@@ -178,64 +192,109 @@ deduceStock:: [EventInstance] -> [Stock]
 deduceStock es = [ countStock ent es | ent <- getEntities es]
 
 -- planned
-getPlannedDate:: EventInstance -> TimeStamps
+getPlannedDate:: EventInstance -> Timing
 getPlannedDate e = evtInstPlanned e
 
-getPlannedStartDate:: EventInstance -> Date
-getPlannedStartDate e = (getPlannedDate e) !! 1
+getPlannedTodoDate:: EventInstance -> Date
+getPlannedTodoDate e = todo (getPlannedDate e)
+
+getPlannedBeginDate:: EventInstance -> Date
+getPlannedBeginDate e = begin (getPlannedDate e)
 
 getPlannedEndDate:: EventInstance -> Date
-getPlannedEndDate e = (getPlannedDate e) !!2
+getPlannedEndDate e = end (getPlannedDate e)
 
 -- actual
-getActualDate:: EventInstance -> TimeStamps
+getActualDate:: EventInstance -> Timing
 getActualDate e = evtInstActual e
 
-getActualStarDate::EventInstance -> Date
-getActualStarDate e =  (getActualDate e) !! 1
+getActualTodoDate::EventInstance -> Date
+getActualTodoDate e = todo (getActualDate e)
+
+getActualBeginDate::EventInstance -> Date
+getActualBeginDate e = begin (getActualDate e)
 
 getActualEndDate::EventInstance -> Date
-getActualEndDate e =  (getActualDate e) !! 2
+getActualEndDate e = end (getActualDate e)
 
 -- administrative
-getAdminDate:: EventInstance -> TimeStamps
+getAdminDate:: EventInstance -> Timing
 getAdminDate e = evtInstAdministrative e
 
-getAdminCreateDate:: EventInstance -> Date
-getAdminCreateDate e = (getAdminDate e) !! 0
+getAdminTodoDate:: EventInstance -> Date
+getAdminTodoDate e = todo (getAdminDate e)
+
+getAdminBeginDate:: EventInstance -> Date
+getAdminBeginDate e = begin (getAdminDate e)
+
+getAdminEndDate:: EventInstance -> Date
+getAdminEndDate e = end (getAdminDate e)
 
 -- do something with the first and last dates
 -- before
-beforeOpen:: Date -> (EventInstance -> TimeStamps) -> Int -> EventInstance -> Bool
+beforeOpen:: Date -> (EventInstance -> Date) -> EventInstance -> Bool
+beforeOpen (d, m, y) func evt = if( (getyear (func evt)) < y ) then True
+else if ( (getyear (func evt)) == y && (getmonth (func evt)) < m ) then True
+else if ( (getyear (func evt)) == y && (getmonth (func evt)) == m && (getday (func evt)) < d ) then True
+else False
+
+beforeClosed:: Date -> (EventInstance -> Date) -> EventInstance -> Bool
+beforeClosed (d, m, y) func evt = if( (getyear (func evt)) < y ) then True
+else if ( (getyear (func evt)) == y && (getmonth (func evt)) < m ) then True
+else if ( (getyear (func evt)) == y && (getmonth (func evt)) == m && (getday (func evt)) <= d ) then True
+else False
+
+-- after
+afterOpen:: Date -> (EventInstance -> Date) -> EventInstance -> Bool
+afterOpen (d, m, y) func evt = not (beforeClosed (d, m, y) func evt)
+
+afterClosed:: Date -> (EventInstance -> Date) -> EventInstance -> Bool
+afterClosed (d, m, y) func evt = not (beforeOpen (d, m, y) func evt)
+
+-- in period
+inperiod:: Date -> (EventInstance -> Date) -> Date -> (EventInstance -> Date) -> EventInstance -> Bool
+inperiod t1 func1 t2 func2 evt = afterClosed t1 func1 evt && beforeClosed t2 func2 evt
+
+{-
+-- previous versions
+
+beforeOpen:: Date -> (EventInstance -> Timing) -> Int -> EventInstance -> Bool
 beforeOpen (d, m, y) func int evt = if(getyear ((func evt)!!int) < y) then True
 else if (getyear ((func evt)!!int) == y && getmonth ((func evt)!!int) < m) then True
 else if (getyear ((func evt)!!int) == y && getmonth ((func evt)!!int) == m && getday ((func evt)!!int) < d) then True
 else False
 
-beforeClosed:: Date -> (EventInstance -> TimeStamps) -> Int -> EventInstance -> Bool
+beforeClosed:: Date -> (EventInstance -> Timing) -> Int -> EventInstance -> Bool
 beforeClosed (d, m, y) func int evt = if(getyear ((func evt)!!int) < y) then True
 else if (getyear ((func evt)!!int) == y && getmonth ((func evt)!!int) < m) then True
 else if (getyear ((func evt)!!int) == y && getmonth ((func evt)!!int) == m && getday ((func evt)!!int) <= d) then True
 else False
 
 -- after
-afterOpen:: Date -> (EventInstance -> TimeStamps) -> Int -> EventInstance -> Bool
+afterOpen:: Date -> (EventInstance -> Timing) -> Int -> EventInstance -> Bool
 afterOpen (d, m, y) func int evt = not (beforeClosed (d, m, y) func int evt)
 
-afterClosed:: Date -> (EventInstance -> TimeStamps) -> Int -> EventInstance -> Bool
+afterClosed:: Date -> (EventInstance -> Timing) -> Int -> EventInstance -> Bool
 afterClosed (d, m, y) func int evt = not (beforeOpen (d, m, y) func int evt)
 
 -- in period
-inperiod:: Date -> (EventInstance -> TimeStamps) -> Int -> Date -> (EventInstance -> TimeStamps) -> Int -> EventInstance -> Bool
+inperiod:: Date -> (EventInstance -> Timing) -> Int -> Date -> (EventInstance -> Timing) -> Int -> EventInstance -> Bool
 inperiod t1 func1 int1 t2 func2 int2 evt = afterClosed t1 func1 int1 evt && beforeClosed t2 func2 int2 evt
+-}
 
 -- is done
 isdone:: EventInstance -> Bool
-isdone e = if List.genericLength (getActualDate e) == 3 then True else False
+isdone e = (getActualEndDate e) > emptyDateFirst
 
 -- is planned
 isplanned:: EventInstance -> Bool
-isplanned e = if List.genericLength (getPlannedDate e) > 0 then True else False
+--isplanned e = if List.genericLength( map(getPlannedTodoDate e) ) == 3 then True else False
+isplanned e = (getPlannedTodoDate e) > emptyDateFirst
+
+-- is started
+isstarted:: EventInstance -> Bool
+--isstarted e = if List.genericLength( map( getPlannedBeginDate e) ) == 3 then True else False
+isstarted e = (getPlannedBeginDate e)  > emptyDateFirst
 
 -- changes of ownership
 ischangeownership:: EventInstance -> Bool
@@ -243,13 +302,21 @@ ischangeownership e = if evtInstChangeOfOwnership e == Always then True else Fal
 
 -- physical stock
 physicalStockAtT:: [EventInstance] -> Date -> [Stock]
-physicalStockAtT es t = deduceStock (filter (beforeClosed t getActualDate 2) es) 
+physicalStockAtT es t = deduceStock (filter (beforeClosed t getActualEndDate) es) 
+{- 
+previos version
+physicalStockAtT es t = deduceStock (filter (beforeClosed t getActualDate 2) es)
+-}
 
 -- economic stock
 economicStockAtT:: [EventInstance] -> Date -> [Stock]
+economicStockAtT es t = deduceStock (List.nub ((filter (beforeClosed t getPlannedTodoDate ) es) ++ (filter (beforeClosed t getActualTodoDate) es)))
+{-
+previous version
 economicStockAtT es t = deduceStock (List.nub ((filter (beforeClosed t getPlannedDate 0) es) ++ (filter (beforeClosed t getActualDate 0) es)))
+-}
 
-{- KPI : averageDurationOfDoneEventsThatChangeOfOwnership calculations -}
+{- KPI : average duration of done events that change of ownership calculations - grouped by direction -}
 {-function finds events that change of ownership and calculates the average duration-}
 
 kpiAvgDurChgOwDone:: [EventInstance] -> [Float]
@@ -270,24 +337,24 @@ calculateAverageDuration :: [EventInstance] -> Float
 calculateAverageDuration es =  realToFrac( sum (map calculateDuration (es) ) ) / List.genericLength es
 
 calculateDuration ::  EventInstance -> Int
-calculateDuration e = durationInDays (getActualStarDate e) (getActualEndDate e)
+calculateDuration e = durationInDays (getActualBeginDate e) (getActualEndDate e)
 
 durationInDays ::  Date -> Date -> Int
-durationInDays start end = fromInteger( Time.diffDays (Time.fromGregorian (getyear end) (getmonthint end) (getdayint end)) (Time.fromGregorian (getyear start) (getmonthint start) (getdayint start)) )
+durationInDays begin end = fromInteger( Time.diffDays (Time.fromGregorian (getyear end) (getmonthint end) (getdayint end)) (Time.fromGregorian (getyear begin) (getmonthint begin) (getdayint begin)) )
 
 eventsinperiod :: [EventInstance] -> Date -> Date -> [EventInstance]
-eventsinperiod es pstart pend = filter (inperiod pstart getAdminDate 1  pend getAdminDate 2 )es
+eventsinperiod es pbegin pend = filter (inperiod pbegin getAdminBeginDate pend getAdminEndDate ) es
 
 calculatePercentage :: Float -> Float -> Float
 calculatePercentage newValue oldValue = if oldValue /=0 then (newValue / oldValue) *100 else 0
 
 kpiAvgDurChgOwDone_compare_with_same_period_last_year::[EventInstance] -> Date -> Date -> Date -> Date -> [(Float,Float, String)]
-kpiAvgDurChgOwDone_compare_with_same_period_last_year es dt1 dt2 dt3 dt4 = zip3 kpiAvgDurChgOwDonethisperiod kpiAvgDurChgOwDoneprevperiod [ ( show  $ (calculatePercentage (kpiAvgDurChgOwDonethisperiod!!0) (kpiAvgDurChgOwDoneprevperiod!!0)) ) ++ " %" , (show  $ (calculatePercentage (kpiAvgDurChgOwDonethisperiod!!1) (kpiAvgDurChgOwDoneprevperiod!!1)))  ++ " %"  ]
+kpiAvgDurChgOwDone_compare_with_same_period_last_year es dt1 dt2 dt3 dt4 = zip3 kpiAvgDurChgOwDonethisperiod kpiAvgDurChgOwDoneprevperiod [ ( show  $ (( calculatePercentage (kpiAvgDurChgOwDonethisperiod!!0) (kpiAvgDurChgOwDoneprevperiod!!0)) - 100 )) ++ " %" , (show  $ ( (calculatePercentage (kpiAvgDurChgOwDonethisperiod!!1) (kpiAvgDurChgOwDoneprevperiod!!1)) - 100 ) )  ++ " %"  ]
                                                   where kpiAvgDurChgOwDonethisperiod = kpiAvgDurChgOwDone (eventsinperiod es dt1 dt2) 
                                                         kpiAvgDurChgOwDoneprevperiod = kpiAvgDurChgOwDone (eventsinperiod es dt3 dt4)
-p1Start = (1, 1, 2017)
+p1Begin = (1, 1, 2017)
 p1End = (31, 12, 2017)
-p2Start = (1, 1, 2016)
+p2Begin = (1, 1, 2016)
 p2End = (31, 12, 2016)
 
-kpiValue = kpiAvgDurChgOwDone_compare_with_same_period_last_year events p1Start p1End p2Start p2End
+kpiValue = kpiAvgDurChgOwDone_compare_with_same_period_last_year events p1Begin p1End p2Begin p2End
