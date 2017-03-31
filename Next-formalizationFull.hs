@@ -117,6 +117,8 @@ goodReceive2b = EventInstance{evtRef = goodsReceiveEvent, evtInstName = "goodRec
 
 salesInvoice1a = EventInstance{evtRef = salesInvoiceEvent, evtInstName = "salesInvoice1a", evtInstStyle = Regular, evtInstHasParty = True, evtInstParty = customer1, evtInstHasSubject = True, evtInstSubject = product1, evtInstHasAmount = True, evtInstHasValue = True, evtInstDirection  = DirIn, evtInstChangeOfOwnership = Never, evtInstTypeOfOwnership = TradeItem, evtInstPaymentRequired = Always, evtInstPlanned = Timing{ todo = (1, 8, 2016), begin = (5, 8, 2016), end =(10, 9, 2016)}, evtInstActual = Timing{ todo = (5, 8, 2016), begin = (10, 9, 2016), end = (16, 10, 2016)}, evtInstAdministrative = Timing{ todo = (1, 8, 2016), begin = (5, 8, 2016), end = (10, 9, 2016)}, evtInstAmount = 100, evtInstValue = [100, 500]}
 
+
+-- Sample populations
 persons = [person1, person2]
 goods = [good1, good2]
 roles = [customer1, customer2, product1, product2, supplier1]
@@ -124,6 +126,61 @@ events = [delivery1a, delivery1b, delivery2a, delivery2b, delivery3a, delivery3b
 
 -- Stock
 data Stock = Stock {entity:: EntityInstance, stockAmount:: Integer} deriving (Show)
+
+-- physical stock
+physicalStockAtT:: [EventInstance] -> Date -> [Stock]
+physicalStockAtT es t = deduceStock (filter (beforeClosed t getActualEndDate) es)
+
+-- economic stock
+economicStockAtT:: [EventInstance] -> Date -> [Stock]
+economicStockAtT es t = deduceStock (List.nub ((filter (beforeClosed t getPlannedTodoDate ) es) ++ (filter (beforeClosed t getActualTodoDate) es)))
+
+
+{- KPI : average duration of done events that change of ownership calculations - grouped by direction -}
+{-function finds events that change of ownership and calculates the average duration-}
+
+kpiAvgDurChgOwDone:: [EventInstance] -> [Float]
+kpiAvgDurChgOwDone es = getAverageDurationEventsChangeOwnershipDone (getEventsChangeOwnershipGrouped es)
+
+getEventsChangeOwnershipGrouped :: [EventInstance] -> [[EventInstance]]
+getEventsChangeOwnershipGrouped es = List.groupBy (\x y -> evtInstDirection x == evtInstDirection y) (getEventsChangeOwnership es)
+
+-- helper functions
+getEventsChangeOwnership:: [EventInstance] -> [EventInstance]
+getEventsChangeOwnership es = filter ( isdone ) (filter (ischangeownership) es)
+
+getAverageDurationEventsChangeOwnershipDone :: [[EventInstance]] -> [Float]
+getAverageDurationEventsChangeOwnershipDone es =  map calculateAverageDuration (es)
+
+
+calculateAverageDuration :: [EventInstance] -> Float
+calculateAverageDuration es =  realToFrac( sum (map calculateDuration (es) ) ) / List.genericLength es
+
+calculateDuration ::  EventInstance -> Int
+calculateDuration e = durationInDays (getActualBeginDate e) (getActualEndDate e)
+
+durationInDays ::  Date -> Date -> Int
+durationInDays begin end = fromInteger( Time.diffDays (Time.fromGregorian (getyear end) (getmonthint end) (getdayint end)) (Time.fromGregorian (getyear begin) (getmonthint begin) (getdayint begin)) )
+
+eventsinperiod :: [EventInstance] -> Date -> Date -> [EventInstance]
+eventsinperiod es pbegin pend = filter (inperiod pbegin getAdminBeginDate pend getAdminEndDate ) es
+
+calculatePercentage :: Float -> Float -> Float
+calculatePercentage newValue oldValue = if oldValue /=0 then (newValue / oldValue) *100 else 0
+
+kpiAvgDurChgOwDone_compare_with_same_period_last_year::[EventInstance] -> Date -> Date -> Date -> Date -> [(Float,Float, String)]
+kpiAvgDurChgOwDone_compare_with_same_period_last_year es dt1 dt2 dt3 dt4 = zip3 kpiAvgDurChgOwDonethisperiod kpiAvgDurChgOwDoneprevperiod [ ( show  $ (( calculatePercentage (kpiAvgDurChgOwDonethisperiod!!0) (kpiAvgDurChgOwDoneprevperiod!!0)) - 100 )) ++ " %" , (show  $ ( (calculatePercentage (kpiAvgDurChgOwDonethisperiod!!1) (kpiAvgDurChgOwDoneprevperiod!!1)) - 100 ) )  ++ " %"  ]
+                                                  where kpiAvgDurChgOwDonethisperiod = kpiAvgDurChgOwDone (eventsinperiod es dt1 dt2)
+                                                        kpiAvgDurChgOwDoneprevperiod = kpiAvgDurChgOwDone (eventsinperiod es dt3 dt4)
+p1Begin = (1, 1, 2017)
+p1End = (31, 12, 2017)
+p2Begin = (1, 1, 2016)
+p2End = (31, 12, 2016)
+
+kpiValue = kpiAvgDurChgOwDone_compare_with_same_period_last_year events p1Begin p1End p2Begin p2End
+
+
+-- Helper functions
 
 get1st (a, b, c) = a
 get2nd (a, b, c) = b
@@ -251,32 +308,7 @@ afterClosed (d, m, y) func evt = not (beforeOpen (d, m, y) func evt)
 inperiod:: Date -> (EventInstance -> Date) -> Date -> (EventInstance -> Date) -> EventInstance -> Bool
 inperiod t1 func1 t2 func2 evt = afterClosed t1 func1 evt && beforeClosed t2 func2 evt
 
-{-
--- previous versions
 
-beforeOpen:: Date -> (EventInstance -> Timing) -> Int -> EventInstance -> Bool
-beforeOpen (d, m, y) func int evt = if(getyear ((func evt)!!int) < y) then True
-else if (getyear ((func evt)!!int) == y && getmonth ((func evt)!!int) < m) then True
-else if (getyear ((func evt)!!int) == y && getmonth ((func evt)!!int) == m && getday ((func evt)!!int) < d) then True
-else False
-
-beforeClosed:: Date -> (EventInstance -> Timing) -> Int -> EventInstance -> Bool
-beforeClosed (d, m, y) func int evt = if(getyear ((func evt)!!int) < y) then True
-else if (getyear ((func evt)!!int) == y && getmonth ((func evt)!!int) < m) then True
-else if (getyear ((func evt)!!int) == y && getmonth ((func evt)!!int) == m && getday ((func evt)!!int) <= d) then True
-else False
-
--- after
-afterOpen:: Date -> (EventInstance -> Timing) -> Int -> EventInstance -> Bool
-afterOpen (d, m, y) func int evt = not (beforeClosed (d, m, y) func int evt)
-
-afterClosed:: Date -> (EventInstance -> Timing) -> Int -> EventInstance -> Bool
-afterClosed (d, m, y) func int evt = not (beforeOpen (d, m, y) func int evt)
-
--- in period
-inperiod:: Date -> (EventInstance -> Timing) -> Int -> Date -> (EventInstance -> Timing) -> Int -> EventInstance -> Bool
-inperiod t1 func1 int1 t2 func2 int2 evt = afterClosed t1 func1 int1 evt && beforeClosed t2 func2 int2 evt
--}
 
 -- is done
 isdone:: EventInstance -> Bool
@@ -295,62 +327,3 @@ isstarted e = (getPlannedBeginDate e)  > emptyDateFirst
 -- changes of ownership
 ischangeownership:: EventInstance -> Bool
 ischangeownership e = if evtInstChangeOfOwnership e == Always then True else False
-
--- physical stock
-physicalStockAtT:: [EventInstance] -> Date -> [Stock]
-physicalStockAtT es t = deduceStock (filter (beforeClosed t getActualEndDate) es)
-{-
-previos version
-physicalStockAtT es t = deduceStock (filter (beforeClosed t getActualDate 2) es)
--}
-
--- economic stock
-economicStockAtT:: [EventInstance] -> Date -> [Stock]
-economicStockAtT es t = deduceStock (List.nub ((filter (beforeClosed t getPlannedTodoDate ) es) ++ (filter (beforeClosed t getActualTodoDate) es)))
-{-
-previous version
-economicStockAtT es t = deduceStock (List.nub ((filter (beforeClosed t getPlannedDate 0) es) ++ (filter (beforeClosed t getActualDate 0) es)))
--}
-
-{- KPI : average duration of done events that change of ownership calculations - grouped by direction -}
-{-function finds events that change of ownership and calculates the average duration-}
-
-kpiAvgDurChgOwDone:: [EventInstance] -> [Float]
-kpiAvgDurChgOwDone es = getAverageDurationEventsChangeOwnershipDone (getEventsChangeOwnershipGrouped es)
-
-getEventsChangeOwnershipGrouped :: [EventInstance] -> [[EventInstance]]
-getEventsChangeOwnershipGrouped es = List.groupBy (\x y -> evtInstDirection x == evtInstDirection y) (getEventsChangeOwnership es)
-
--- helper functions
-getEventsChangeOwnership:: [EventInstance] -> [EventInstance]
-getEventsChangeOwnership es = filter ( isdone ) (filter (ischangeownership) es)
-
-getAverageDurationEventsChangeOwnershipDone :: [[EventInstance]] -> [Float]
-getAverageDurationEventsChangeOwnershipDone es =  map calculateAverageDuration (es)
-
-
-calculateAverageDuration :: [EventInstance] -> Float
-calculateAverageDuration es =  realToFrac( sum (map calculateDuration (es) ) ) / List.genericLength es
-
-calculateDuration ::  EventInstance -> Int
-calculateDuration e = durationInDays (getActualBeginDate e) (getActualEndDate e)
-
-durationInDays ::  Date -> Date -> Int
-durationInDays begin end = fromInteger( Time.diffDays (Time.fromGregorian (getyear end) (getmonthint end) (getdayint end)) (Time.fromGregorian (getyear begin) (getmonthint begin) (getdayint begin)) )
-
-eventsinperiod :: [EventInstance] -> Date -> Date -> [EventInstance]
-eventsinperiod es pbegin pend = filter (inperiod pbegin getAdminBeginDate pend getAdminEndDate ) es
-
-calculatePercentage :: Float -> Float -> Float
-calculatePercentage newValue oldValue = if oldValue /=0 then (newValue / oldValue) *100 else 0
-
-kpiAvgDurChgOwDone_compare_with_same_period_last_year::[EventInstance] -> Date -> Date -> Date -> Date -> [(Float,Float, String)]
-kpiAvgDurChgOwDone_compare_with_same_period_last_year es dt1 dt2 dt3 dt4 = zip3 kpiAvgDurChgOwDonethisperiod kpiAvgDurChgOwDoneprevperiod [ ( show  $ (( calculatePercentage (kpiAvgDurChgOwDonethisperiod!!0) (kpiAvgDurChgOwDoneprevperiod!!0)) - 100 )) ++ " %" , (show  $ ( (calculatePercentage (kpiAvgDurChgOwDonethisperiod!!1) (kpiAvgDurChgOwDoneprevperiod!!1)) - 100 ) )  ++ " %"  ]
-                                                  where kpiAvgDurChgOwDonethisperiod = kpiAvgDurChgOwDone (eventsinperiod es dt1 dt2)
-                                                        kpiAvgDurChgOwDoneprevperiod = kpiAvgDurChgOwDone (eventsinperiod es dt3 dt4)
-p1Begin = (1, 1, 2017)
-p1End = (31, 12, 2017)
-p2Begin = (1, 1, 2016)
-p2End = (31, 12, 2016)
-
-kpiValue = kpiAvgDurChgOwDone_compare_with_same_period_last_year events p1Begin p1End p2Begin p2End
