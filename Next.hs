@@ -15,7 +15,7 @@ data EvtStyle = Agreement | Regular deriving (Eq, Show)
 data Direction = DirIn | DirOut deriving (Eq, Show)
 data OEMEvtOptions = Always | Optional | Never | OptBot deriving (Eq, Show)
 data OEMTypeOfOwnership = Asset | OwnershipOptional | TradeItem | OwnershipBot deriving (Eq, Show)
-data Status = ToDo | Started | Done deriving (Eq, Show)
+data Status = ToDo | Doing | Done deriving (Eq, Show)
 
 ------------ OEMEntity
 data OEMEntity = OEMEntity {oemEntname :: String, oemEntType :: EntType} deriving (Eq, Show)
