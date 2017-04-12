@@ -1,3 +1,6 @@
+-- Next Copyright AFAS Software BV - 2017
+
+
 import Next
 import NextKpi
 

@@ -1,3 +1,5 @@
+-- Next Copyright AFAS Software BV - 2017
+
 module NextKpi where
 
 import qualified Data.List as List
