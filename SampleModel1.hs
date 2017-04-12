@@ -14,11 +14,16 @@ productStyle = LAMActorStyle {lamActorEnttype = Good, lamActorEntity = goodEntit
 roleProduct = LAMRole {lamRoleName = "Product", lamActStyle = [productStyle]}
 
 -- unal : before we used paymentRequired as a separator between invoice and delivery. If we say paymentRequired=Always for a delivery then there will be no difference between it and an invoice
-deliveryEvent = LAMEvent {lamEvtName = "Delivery", lamEvtStyle = Regular, lamhasParty = True, lamEvtParty = roleCustomer, lamhasSubject = True, lamEvtSubject = roleProduct, lamhasAmount = True, lamhasValue = True, lamEvtDirection = DirOut, lamEvtChangeOfOwnership = Always, lamEvtTypeOfOwnership = TradeItem, lamEvtPaymentRequired = Never}
+deliveryEvent = LAMEvent {lamEvtName = "Delivery", lamEvtStyle = Regular, lamEvtHasParty = True, lamEvtParty = roleCustomer, lamEvtHasSubject = True, lamEvtSubject = roleProduct, lamEvtHasAmount = True, lamEvtHasValue = True, lamEvtDirection = DirOut, lamEvtChangeOfOwnership = Always, lamEvtTypeOfOwnership = TradeItem, lamEvtPaymentRequired = Never}
 
-goodsReceiveEvent = LAMEvent {lamEvtName = "GoodsReceive", lamEvtStyle = Regular, lamhasParty = True, lamEvtParty = roleSupplier, lamhasSubject = True, lamEvtSubject = roleProduct, lamhasAmount = True, lamhasValue = True, lamEvtDirection = DirIn, lamEvtChangeOfOwnership = Always, lamEvtTypeOfOwnership = TradeItem, lamEvtPaymentRequired = Never}
+goodsReceiveEvent = LAMEvent {lamEvtName = "GoodsReceive", lamEvtStyle = Regular, lamEvtHasParty = True, lamEvtParty = roleSupplier, lamEvtHasSubject = True, lamEvtSubject = roleProduct, lamEvtHasAmount = True, lamEvtHasValue = True, lamEvtDirection = DirIn, lamEvtChangeOfOwnership = Always, lamEvtTypeOfOwnership = TradeItem, lamEvtPaymentRequired = Never}
 
-salesInvoiceEvent = LAMEvent {lamEvtName = "SalesInvoice", lamEvtStyle = Regular, lamhasParty = True, lamEvtParty = roleCustomer, lamhasSubject = True, lamEvtSubject = roleProduct, lamhasAmount = True, lamhasValue = True, lamEvtDirection = DirOut, lamEvtChangeOfOwnership = Never, lamEvtTypeOfOwnership = TradeItem, lamEvtPaymentRequired = Always}
+salesInvoiceEvent = LAMEvent {lamEvtName = "SalesInvoice", lamEvtStyle = Regular, lamEvtHasParty = True, lamEvtParty = roleCustomer, lamEvtHasSubject = True, lamEvtSubject = roleProduct, lamEvtHasAmount = True, lamEvtHasValue = True, lamEvtDirection = DirOut, lamEvtChangeOfOwnership = Never, lamEvtTypeOfOwnership = TradeItem, lamEvtPaymentRequired = Always}
+
+salesOfferEvent = LAMEvent {lamEvtName = "salesOfferEvent", lamEvtStyle = Regular, lamEvtHasParty = True, lamEvtParty = roleCustomer, lamEvtHasSubject = True, lamEvtSubject = roleProduct, lamEvtHasAmount = True, lamEvtHasValue = True, lamEvtDirection = DirOut, lamEvtChangeOfOwnership = Never, lamEvtTypeOfOwnership = TradeItem, lamEvtPaymentRequired = Never}
+
+salesOrderAgreement = LAMAgreement {lamAgrName = "salesOrderAgreement", lamAgrStyle = Agreement, lamAgrHasParty = True, lamAgrParty = roleCustomer, lamAgrHasAmount = True, lamAgrHasValue = True, lamAgrFormer = (Just salesOfferEvent), lamAgrLatter = deliveryEvent}
+
 
 ------------------------------------------- Run-time
 person1 = EntityInstance{entRef = personEntity, entInstName = "Alice", entInstType = Person, entInstCreate = (1, 1, 1988), entInstDelete = emptyDateLast}
@@ -55,14 +60,22 @@ goodReceive2a = EventInstance{evtRef = goodsReceiveEvent, evtInstName = "goodRec
 
 goodReceive2b = EventInstance{evtRef = goodsReceiveEvent, evtInstName = "goodReceive2b", evtInstStyle = Regular, evtInstHasParty = True, evtInstParty = customer1, evtInstHasSubject = True, evtInstSubject = product1, evtInstHasAmount = True, evtInstHasValue = True, evtInstDirection  = DirIn, evtInstChangeOfOwnership = Always, evtInstTypeOfOwnership = TradeItem, evtInstPaymentRequired = Never, evtInstPlanned = Timing{ todo = (10, 8, 2016), begin = (20, 9, 2016), end = (30, 10, 2016)}, evtInstActual = Timing{ todo = (10, 8, 2016), begin = (20, 9, 2016), end = (30, 10, 2016)}, evtInstAdministrative = Timing { todo = (10, 8, 2016), begin = (20, 9, 2016), end = (30, 10, 2016)}, evtInstAmount = 100, evtInstValue = [100, 500]}
 
-salesInvoice1a = EventInstance{evtRef = salesInvoiceEvent, evtInstName = "salesInvoice1a", evtInstStyle = Regular, evtInstHasParty = True, evtInstParty = customer1, evtInstHasSubject = True, evtInstSubject = product1, evtInstHasAmount = True, evtInstHasValue = True, evtInstDirection  = DirIn, evtInstChangeOfOwnership = Never, evtInstTypeOfOwnership = TradeItem, evtInstPaymentRequired = Always, evtInstPlanned = Timing{ todo = (1, 8, 2016), begin = (5, 8, 2016), end =(10, 9, 2016)}, evtInstActual = Timing{ todo = (5, 8, 2016), begin = (10, 9, 2016), end = (16, 10, 2016)}, evtInstAdministrative = Timing{ todo = (1, 8, 2016), begin = (5, 8, 2016), end = (10, 9, 2016)}, evtInstAmount = 100, evtInstValue = [100, 500]}
+salesInvoice1a = EventInstance{evtRef = salesInvoiceEvent, evtInstName = "salesInvoice1a", evtInstStyle = Regular, evtInstHasParty = True, evtInstParty = customer1, evtInstHasSubject = True, evtInstSubject = product1, evtInstHasAmount = True, evtInstHasValue = True, evtInstDirection  = DirOut, evtInstChangeOfOwnership = Never, evtInstTypeOfOwnership = TradeItem, evtInstPaymentRequired = Always, evtInstPlanned = Timing{ todo = (1, 8, 2016), begin = (5, 8, 2016), end =(10, 9, 2016)}, evtInstActual = Timing{ todo = (5, 8, 2016), begin = (10, 9, 2016), end = (16, 10, 2016)}, evtInstAdministrative = Timing{ todo = (1, 8, 2016), begin = (5, 8, 2016), end = (10, 9, 2016)}, evtInstAmount = 100, evtInstValue = [100, 500]}
 
+salesOffer1a = EventInstance{evtRef = salesOfferEvent, evtInstName = "salesOffer1a", evtInstStyle = Regular, evtInstHasParty = True, evtInstParty = customer1, evtInstHasSubject = True, evtInstSubject = product1, evtInstHasAmount = True, evtInstHasValue = True, evtInstDirection  = DirOut, evtInstChangeOfOwnership = Never, evtInstTypeOfOwnership = TradeItem, evtInstPaymentRequired = Never, evtInstPlanned = Timing{ todo = (1, 8, 2016), begin = (5, 8, 2016), end =(10, 9, 2016)}, evtInstActual = Timing{ todo = (5, 8, 2016), begin = (10, 9, 2016), end = (16, 10, 2016)}, evtInstAdministrative = Timing{ todo = (1, 8, 2016), begin = (5, 8, 2016), end = (10, 9, 2016)}, evtInstAmount = 100, evtInstValue = [100, 500]}
+
+salesOffer1b = EventInstance{evtRef = salesOfferEvent, evtInstName = "salesOffer1b", evtInstStyle = Regular, evtInstHasParty = True, evtInstParty = customer1, evtInstHasSubject = True, evtInstSubject = product1, evtInstHasAmount = True, evtInstHasValue = True, evtInstDirection  = DirOut, evtInstChangeOfOwnership = Never, evtInstTypeOfOwnership = TradeItem, evtInstPaymentRequired = Never, evtInstPlanned = Timing{ todo = (1, 8, 2016), begin = (5, 8, 2016), end =(10, 9, 2016)}, evtInstActual = Timing{ todo = (5, 8, 2016), begin = (10, 9, 2016), end = (16, 10, 2016)}, evtInstAdministrative = Timing{ todo = (1, 8, 2016), begin = (5, 8, 2016), end = (10, 9, 2016)}, evtInstAmount = 100, evtInstValue = [100, 500]}
+
+salesOrder1a = AgreementInstance{agrRef = salesOrderAgreement, agrInstName = "salesOrder1a", agrInstStyle = Agreement, agrInstHasParty = True, agrInstParty = customer1, agrInstHasAmount = True, agrInstHasValue = True,  agrInstPlanned = Timing{ todo = (1, 8, 2016), begin = (5, 8, 2016), end =(10, 9, 2016)}, agrInstActual = Timing{ todo = (5, 8, 2016), begin = (10, 9, 2016), end = (16, 10, 2016)}, agrInstAdministrative = Timing{ todo = (1, 8, 2016), begin = (5, 8, 2016), end = (10, 9, 2016)}, agrInstAmount = 100, agrInstValue = [100, 500], agrInstFormer = (Just salesOffer1a), agrInstLatter =  delivery1a}
+
+salesOrder1b = AgreementInstance{agrRef = salesOrderAgreement, agrInstName = "salesOrder1b", agrInstStyle = Agreement, agrInstHasParty = True, agrInstParty = customer1, agrInstHasAmount = True, agrInstHasValue = True,  agrInstPlanned = Timing{ todo = (1, 8, 2016), begin = (5, 8, 2016), end =(10, 9, 2016)}, agrInstActual = Timing{ todo = (5, 8, 2016), begin = (10, 9, 2016), end = (16, 10, 2016)}, agrInstAdministrative = Timing{ todo = (1, 8, 2016), begin = (5, 8, 2016), end = (10, 9, 2016)}, agrInstAmount = 100, agrInstValue = [100, 500], agrInstFormer = Nothing, agrInstLatter =  delivery1b}
 
 -- Sample populations
 persons = [person1, person2]
 goods = [good1, good2]
 roles = [customer1, customer2, product1, product2, supplier1]
-events = [delivery1a, delivery1b, delivery2a, delivery2b, delivery3a, delivery3b, goodReceive1a, goodReceive1b, goodReceive2a, goodReceive2b]
+events = [delivery1a, delivery1b, delivery2a, delivery2b, delivery3a, delivery3b, goodReceive1a, goodReceive1b, goodReceive2a, goodReceive2b, salesOffer1a, salesOffer1b]
+agreements = [salesOrder1a, salesOrder1b]
 
 
 -- Show some KPI values
@@ -71,4 +84,9 @@ p1End = (31, 12, 2017)
 p2Begin = (1, 1, 2016)
 p2End = (31, 12, 2016)
 
-kpiValue = kpiAvgDurChgOwDone_compare_with_same_period_last_year events p1Begin p1End p2Begin p2End
+kpiValue_AverageDuration = kpiAvgDurChgOwDone_compare_with_same_period_last_year events p1Begin p1End p2Begin p2End
+
+kpiValue_FromEventToAgreementPercentage = (show $ (kpiFromEventToAgreementPercentage events agreements) ) ++ " %" 
+
+
+
