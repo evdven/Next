@@ -67,14 +67,5 @@ kpiAvgDurChgOwDone_compare_with_same_period_last_year es dt1 dt2 dt3 dt4 = zip3 
 
 {- KPI : percentage-events followed by agreement , e.g., sales offer -> sales order -}
 
-hasFormer :: AgreementInstance -> Bool
-hasFormer a = (agrInstFormer a) /= Nothing
-
-getEventsFollowAgreement :: [AgreementInstance] -> [Maybe EventInstance]
-getEventsFollowAgreement ags = [agrInstFormer a | a<- ags, ((hasFormer a) == True)]
-
-getEventsMayFollowAgreement :: [EventInstance] -> [EventInstance]
-getEventsMayFollowAgreement es = filter ( not . ispaymentrequired ) (filter (not . ischangeownership ) es)
-
 kpiFromEventToAgreementPercentage:: [EventInstance] -> [AgreementInstance] -> Float
 kpiFromEventToAgreementPercentage es ags = calculatePercentage (List.genericLength(getEventsFollowAgreement  ags)) (List.genericLength(getEventsMayFollowAgreement es))

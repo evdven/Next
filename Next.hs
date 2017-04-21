@@ -213,3 +213,14 @@ ischangeownership e = if evtInstChangeOfOwnership e == Always then True else Fal
 ispaymentrequired :: EventInstance -> Bool
 ispaymentrequired e = if evtInstPaymentRequired e == Always then True else False
 
+hasFormer :: AgreementInstance -> Bool
+hasFormer a = (agrInstFormer a) /= Nothing
+
+hasLatter :: AgreementInstance -> Bool
+hasLatter a = (agrInstLatter a) /= Nothing
+
+getEventsFollowAgreement :: [AgreementInstance] -> [Maybe EventInstance]
+getEventsFollowAgreement ags = [agrInstFormer a | a<- ags, ((hasFormer a) == True)]
+
+getEventsMayFollowAgreement :: [EventInstance] -> [EventInstance]
+getEventsMayFollowAgreement es = filter ( not . ispaymentrequired ) (filter (not . ischangeownership ) es)
