@@ -27,9 +27,9 @@ data OEMRole = OEMRole {oemRoleName :: String, oemActStyle :: [OEMActorStyle]} d
 ------------ OEMEvent
 -- TODO incoming edges, outgoing edges, grouping, hasagreement, beginend date
 -- unal : to handle agreements i updated OEMEvent.oemEvtSubject characteristic as optional using Maybe
-data OEMEvent = OEMEvent {oemEvtName :: String, oemEvtStyle:: EvtStyle, oemhasParty :: Bool, oemEvtParty :: OEMRole, oemhasSubject :: Bool, oemEvtSubject :: Maybe OEMRole, oemhasAmount :: Bool, oemhasValue :: Bool, oemEvtDirection :: Direction, oemEvtChangeOfOwnership :: OEMEvtOptions, oemEvtTypeOfOwnership :: OEMTypeOfOwnership, oemEvtPaymentRequired :: OEMEvtOptions} deriving (Eq, Show)
+data OEMEvent = OEMEvent {oemEvtName :: String, oemEvtStyle:: EvtStyle, oemEvtHasParty :: Bool, oemEvtParty :: OEMRole, oemEvtHasSubject :: Bool, oemEvtSubject :: OEMRole, oemEvtHasAmount :: Bool, oemEvtHasValue :: Bool, oemEvtDirection :: Direction, oemEvtChangeOfOwnership :: OEMEvtOptions, oemEvtTypeOfOwnership :: OEMTypeOfOwnership, oemEvtPaymentRequired :: OEMEvtOptions} deriving (Eq, Show)
 
-
+data OEMAgreement = OEMAgreement {oemAgrName :: String, oemAgrStyle:: EvtStyle, oemAgrHasParty :: Bool, oemAgrParty :: OEMRole, oemAgrHasAmount :: Bool, oemAgrHasValue :: Bool, oemAgrFormer :: Maybe OEMEvent, oemAgrLatter :: OEMEvent} deriving (Eq, Show)
 ------------------------------------------- LAM
 
 ------------ LAMEntity
@@ -41,8 +41,9 @@ data LAMRole = LAMRole {lamRoleName :: String, lamActStyle :: [LAMActorStyle]} d
 
 ------------ LAMEvent
 -- TODO incoming edges, outgoing edges, grouping, hasagreement, beginend date
-data LAMEvent = LAMEvent {lamEvtName :: String, lamEvtStyle:: EvtStyle, lamhasParty :: Bool, lamEvtParty :: LAMRole, lamhasSubject :: Bool, lamEvtSubject :: LAMRole, lamhasAmount :: Bool, lamhasValue :: Bool, lamEvtDirection :: Direction, lamEvtChangeOfOwnership :: OEMEvtOptions, lamEvtTypeOfOwnership :: OEMTypeOfOwnership, lamEvtPaymentRequired :: OEMEvtOptions} deriving (Eq, Show)
+data LAMEvent = LAMEvent {lamEvtName :: String, lamEvtStyle:: EvtStyle, lamEvtHasParty :: Bool, lamEvtParty :: LAMRole, lamEvtHasSubject :: Bool, lamEvtSubject :: LAMRole, lamEvtHasAmount :: Bool, lamEvtHasValue :: Bool, lamEvtDirection :: Direction, lamEvtChangeOfOwnership :: OEMEvtOptions, lamEvtTypeOfOwnership :: OEMTypeOfOwnership, lamEvtPaymentRequired :: OEMEvtOptions} deriving (Eq, Show)
 
+data LAMAgreement = LAMAgreement {lamAgrName :: String, lamAgrStyle:: EvtStyle, lamAgrHasParty :: Bool, lamAgrParty :: LAMRole, lamAgrHasAmount :: Bool, lamAgrHasValue :: Bool, lamAgrFormer :: Maybe LAMEvent, lamAgrLatter :: LAMEvent} deriving (Eq, Show)
 
 type Date = (Integer, Integer, Integer)
 -- follows the index of the status (ToDo, Start, Done)
@@ -65,6 +66,7 @@ data RoleInstance = RoleInstance {rolRef:: LAMRole, rolInstName :: String, actIn
 -- TODO elements are missing: incoming edges, outgoing edges, agreement, begin end date
 data EventInstance = EventInstance {evtRef :: LAMEvent, evtInstName :: String, evtInstStyle :: EvtStyle, evtInstHasParty :: Bool, evtInstParty :: RoleInstance, evtInstHasSubject :: Bool, evtInstSubject :: RoleInstance, evtInstHasAmount :: Bool, evtInstHasValue :: Bool, evtInstDirection :: Direction, evtInstChangeOfOwnership :: OEMEvtOptions, evtInstTypeOfOwnership :: OEMTypeOfOwnership, evtInstPaymentRequired :: OEMEvtOptions, evtInstPlanned :: Timing, evtInstActual :: Timing, evtInstAdministrative :: Timing, evtInstAmount :: Integer, evtInstValue :: [Double]} deriving (Eq, Show)
 
+data AgreementInstance = AgreementInstance {agrRef :: LAMAgreement, agrInstName :: String, agrInstStyle :: EvtStyle, agrInstHasParty :: Bool, agrInstParty :: RoleInstance, agrInstHasAmount :: Bool, agrInstHasValue :: Bool, agrInstPlanned :: Timing, agrInstActual :: Timing, agrInstAdministrative :: Timing, agrInstAmount :: Integer, agrInstValue :: [Double], agrInstFormer :: Maybe EventInstance, agrInstLatter :: EventInstance} deriving (Eq, Show)
 
 
 -- Helper functions
@@ -204,5 +206,21 @@ isstarted:: EventInstance -> Bool
 isstarted e = (getPlannedBeginDate e)  > emptyDateFirst
 
 -- changes of ownership
-ischangeownership:: EventInstance -> Bool
+ischangeownership :: EventInstance -> Bool
 ischangeownership e = if evtInstChangeOfOwnership e == Always then True else False
+
+-- payment required
+ispaymentrequired :: EventInstance -> Bool
+ispaymentrequired e = if evtInstPaymentRequired e == Always then True else False
+
+hasFormer :: AgreementInstance -> Bool
+hasFormer a = (agrInstFormer a) /= Nothing
+
+hasLatter :: AgreementInstance -> Bool
+hasLatter a = (agrInstLatter a) /= Nothing
+
+getEventsFollowAgreement :: [AgreementInstance] -> [Maybe EventInstance]
+getEventsFollowAgreement ags = [agrInstFormer a | a<- ags, ((hasFormer a) == True)]
+
+getEventsMayFollowAgreement :: [EventInstance] -> [EventInstance]
+getEventsMayFollowAgreement es = filter ( not . ispaymentrequired ) (filter (not . ischangeownership ) es)

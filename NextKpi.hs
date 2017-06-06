@@ -5,6 +5,7 @@ module NextKpi where
 import qualified Data.List as List
 import qualified Data.Time as Time
 import qualified Data.Time.Clock as Clock
+import Data.Maybe
 
 import Next
 
@@ -63,3 +64,8 @@ kpiAvgDurChgOwDone_compare_with_same_period_last_year::[EventInstance] -> Date -
 kpiAvgDurChgOwDone_compare_with_same_period_last_year es dt1 dt2 dt3 dt4 = zip3 kpiAvgDurChgOwDonethisperiod kpiAvgDurChgOwDoneprevperiod [ ( show  $ (( calculatePercentage (kpiAvgDurChgOwDonethisperiod!!0) (kpiAvgDurChgOwDoneprevperiod!!0)) - 100 )) ++ " %" , (show  $ ( (calculatePercentage (kpiAvgDurChgOwDonethisperiod!!1) (kpiAvgDurChgOwDoneprevperiod!!1)) - 100 ) )  ++ " %"  ]
                                                   where kpiAvgDurChgOwDonethisperiod = kpiAvgDurChgOwDone (eventsinperiod es dt1 dt2)
                                                         kpiAvgDurChgOwDoneprevperiod = kpiAvgDurChgOwDone (eventsinperiod es dt3 dt4)
+
+{- KPI : percentage-events followed by agreement , e.g., sales offer -> sales order -}
+
+kpiFromEventToAgreementPercentage:: [EventInstance] -> [AgreementInstance] -> Float
+kpiFromEventToAgreementPercentage es ags = calculatePercentage (List.genericLength(getEventsFollowAgreement  ags)) (List.genericLength(getEventsMayFollowAgreement es))
