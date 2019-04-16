@@ -1,6 +1,6 @@
 -- Next Copyright AFAS Software BV - 2017
 
--- Intro sample model
+
 import Next
 import NextKpi
 
