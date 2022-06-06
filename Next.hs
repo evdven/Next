@@ -1,4 +1,4 @@
--- Next Copyright AFAS Software BV - 2017
+-- Next Copyright AFAS Software BV - 2022
 -- DSR: formalisations based on LaTeX document
 module Next where
 
